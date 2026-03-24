@@ -10,9 +10,9 @@ app = Flask(__name__)
 # CONFIGURACIÓN — pon tus claves en Railway
 # como variables de entorno, nunca en código
 # ─────────────────────────────────────────
-API_KEY     = os.environ.get("BINANCE_API_KEY")
-API_SECRET  = os.environ.get("BINANCE_API_SECRET")
-WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "mi_clave_secreta")
+API_KEY     = os.environ.get("F9Qtm9PMPh5OFJeiFpD2m5fDqfdGoygGuFCncK2EvutTJ4zqNonoozWPPhSb9kMJ")
+API_SECRET  = os.environ.get("sxe3ANL9dE2hm9THo4hqxqZC7zy9w107HihvxUf5cplYgjY0dFYt527gKEHkZqR3")
+WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET", "supertrend123")
 
 client = Client(API_KEY, API_SECRET)
 
