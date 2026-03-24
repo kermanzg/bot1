@@ -1,4 +1,3 @@
-```python
 from flask import Flask, request, jsonify
 import ccxt, os, logging
 from datetime import datetime
