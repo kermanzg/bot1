@@ -11,7 +11,13 @@ API_KEY = os.environ.get("BINANCE_API_KEY")
 API_SECRET = os.environ.get("BINANCE_API_SECRET")
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
-client = Client(API_KEY, API_SECRET)
+client = None
+
+try:
+    if API_KEY and API_SECRET:
+        client = Client(API_KEY, API_SECRET)
+except Exception as e:
+    print("Error creando cliente Binance:", e)
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
