@@ -1,3 +1,4 @@
+```python
 from flask import Flask, request, jsonify
 import ccxt, os, logging
 from datetime import datetime
@@ -26,16 +27,12 @@ def webhook():
         return jsonify({"error": "Sin datos JSON"}), 400
     if data.get("secret") != WEBHOOK_SECRET:
         return jsonify({"error": "No autorizado"}), 403
-
     symbol   = data.get("symbol", "BTC/USDT")
     side     = data.get("side", "").upper()
     quantity = float(data.get("quantity", 0.001))
-
     if side not in ("BUY", "SELL"):
         return jsonify({"error": "side debe ser BUY o SELL"}), 400
-
     log.info(f"Señal → {side} {quantity} {symbol}")
-
     try:
         if side == "BUY":
             order = exchange.create_market_buy_order(symbol, quantity)
@@ -54,11 +51,3 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
 ```
-
----
-
-Y también verifica que el `requirements.txt` tenga exactamente:
-```
-flask==3.0.3
-ccxt==4.3.93
-gunicorn==21.2.0
