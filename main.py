@@ -3,6 +3,8 @@ from binance.client import Client
 from binance.enums import *
 import os
 
+from flask import Flask
+
 app = Flask(__name__)
 
 API_KEY = os.environ.get("BINANCE_API_KEY")
