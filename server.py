@@ -68,8 +68,8 @@ def webhook():
             if eur_balance < 5:
                 return {"error": "not enough EUR"}, 400
 
-            # 👇 CAMBIA AQUÍ EL RIESGO
-            amount = eur_balance * 0.10  # 10%
+            # 🔥 FIX IMPORTANTE → mínimo 6€
+            amount = max(eur_balance * 0.10, 6)
 
             order = client.create_order(
                 symbol=symbol,
