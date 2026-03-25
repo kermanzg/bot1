@@ -77,34 +77,26 @@ def webhook():
                 type="MARKET",
                 quoteOrderQty=round(amount, 2)
             )
+# ========================
+# SELL → vende todo el BTC (fix)
+# ========================
+else:
+    balance = client.get_asset_balance(asset="BTC")
+    btc_balance = float(balance["free"])
 
-        # ========================
-        # SELL → vende todo el BTC
-        # ========================
-        else:
-            balance = client.get_asset_balance(asset="BTC")
-            btc_balance = float(balance["free"])
+    # mínimo realista
+    if btc_balance < 0.00001:
+        return {"error": "not enough BTC to sell"}, 400
 
-            if btc_balance <= 0:
-                return {"error": "no BTC to sell"}, 400
+    # ajustar precisión (MUY IMPORTANTE)
+    quantity = float(f"{btc_balance:.5f}")
 
-            order = client.create_order(
-                symbol=symbol,
-                side="SELL",
-                type="MARKET",
-                quantity=round(btc_balance, 6)
-            )
-
-        return {
-            "status": "success",
-            "symbol": symbol,
-            "side": side,
-            "order": order
-        }
-
-    except Exception as e:
-        return {"error": str(e)}, 500
-
+    order = client.create_order(
+        symbol=symbol,
+        side="SELL",
+        type="MARKET",
+        quantity=quantity
+    )
 
 # ========================
 # START SERVER
