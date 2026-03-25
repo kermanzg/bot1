@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from binance.client import Client
 import os
 
@@ -12,7 +12,7 @@ API_SECRET = os.environ.get("BINANCE_API_SECRET")
 WEBHOOK_SECRET = os.environ.get("WEBHOOK_SECRET")
 
 # ========================
-# CLIENTE BINANCE (SEGURO)
+# CLIENTE BINANCE
 # ========================
 client = None
 
@@ -26,7 +26,7 @@ except Exception as e:
     print("❌ Error conectando Binance:", e)
 
 # ========================
-# ROUTE TEST
+# TEST
 # ========================
 @app.route("/", methods=["GET"])
 def home():
@@ -51,35 +51,54 @@ def webhook():
     if client is None:
         return {"error": "binance not configured"}, 500
 
-    # Parámetros
     symbol = data.get("symbol", "BTCEUR")
     side = data.get("side")
-    quantity = float(data.get("quantity", 0.001))
 
-    # Validación
     if side not in ["BUY", "SELL"]:
         return {"error": "invalid side"}, 400
 
     try:
         # ========================
-        # ORDENES
+        # BUY → usa % del balance €
         # ========================
         if side == "BUY":
-            order = client.order_market_buy(
+            balance = client.get_asset_balance(asset="EUR")
+            eur_balance = float(balance["free"])
+
+            if eur_balance < 5:
+                return {"error": "not enough EUR"}, 400
+
+            # 👇 CAMBIA AQUÍ EL RIESGO
+            amount = eur_balance * 0.10  # 10%
+
+            order = client.create_order(
                 symbol=symbol,
-                quantity=quantity
+                side="BUY",
+                type="MARKET",
+                quoteOrderQty=round(amount, 2)
             )
+
+        # ========================
+        # SELL → vende todo el BTC
+        # ========================
         else:
-            order = client.order_market_sell(
+            balance = client.get_asset_balance(asset="BTC")
+            btc_balance = float(balance["free"])
+
+            if btc_balance <= 0:
+                return {"error": "no BTC to sell"}, 400
+
+            order = client.create_order(
                 symbol=symbol,
-                quantity=quantity
+                side="SELL",
+                type="MARKET",
+                quantity=round(btc_balance, 6)
             )
 
         return {
             "status": "success",
             "symbol": symbol,
             "side": side,
-            "quantity": quantity,
             "order": order
         }
 
@@ -88,9 +107,8 @@ def webhook():
 
 
 # ========================
-# START SERVER (LOCAL)
+# START SERVER
 # ========================
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
