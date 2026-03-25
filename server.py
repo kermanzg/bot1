@@ -52,7 +52,7 @@ def webhook():
         return {"error": "binance not configured"}, 500
 
     # Parámetros
-    symbol = data.get("symbol", "BTCUSDT")
+    symbol = data.get("symbol", "BTCEUR")
     side = data.get("side")
     quantity = float(data.get("quantity", 0.001))
 
