@@ -39,15 +39,12 @@ def home():
 def webhook():
     data = request.get_json()
 
-    # Validación básica
     if not data:
         return {"error": "no data"}, 400
 
-    # Seguridad
     if data.get("secret") != WEBHOOK_SECRET:
         return {"error": "unauthorized"}, 403
 
-    # Cliente disponible
     if client is None:
         return {"error": "binance not configured"}, 500
 
@@ -59,7 +56,7 @@ def webhook():
 
     try:
         # ========================
-        # BUY → usa % del balance €
+        # BUY
         # ========================
         if side == "BUY":
             balance = client.get_asset_balance(asset="EUR")
@@ -68,7 +65,6 @@ def webhook():
             if eur_balance < 5:
                 return {"error": "not enough EUR"}, 400
 
-            # 🔥 FIX IMPORTANTE → mínimo 6€
             amount = max(eur_balance * 0.10, 6)
 
             order = client.create_order(
@@ -77,26 +73,37 @@ def webhook():
                 type="MARKET",
                 quoteOrderQty=round(amount, 2)
             )
-# ========================
-# SELL → vende todo el BTC (fix)
-# ========================
-else:
-    balance = client.get_asset_balance(asset="BTC")
-    btc_balance = float(balance["free"])
 
-    # mínimo realista
-    if btc_balance < 0.00001:
-        return {"error": "not enough BTC to sell"}, 400
+        # ========================
+        # SELL
+        # ========================
+        else:
+            balance = client.get_asset_balance(asset="BTC")
+            btc_balance = float(balance["free"])
 
-    # ajustar precisión (MUY IMPORTANTE)
-    quantity = float(f"{btc_balance:.5f}")
+            if btc_balance < 0.00001:
+                return {"error": "not enough BTC to sell"}, 400
 
-    order = client.create_order(
-        symbol=symbol,
-        side="SELL",
-        type="MARKET",
-        quantity=quantity
-    )
+            quantity = float(f"{btc_balance:.5f}")
+
+            order = client.create_order(
+                symbol=symbol,
+                side="SELL",
+                type="MARKET",
+                quantity=quantity
+            )
+
+        # 🔥 RESPUESTA FINAL (TE FALTABA ESTO)
+        return {
+            "status": "success",
+            "symbol": symbol,
+            "side": side,
+            "order": order
+        }
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 
 # ========================
 # START SERVER
